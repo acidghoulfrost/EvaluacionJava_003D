@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/productos")
@@ -42,17 +43,32 @@ public class ProductoController {
             @PathVariable Long id,
             @RequestBody ProductoDTO dto) {
 
-        Producto productoActualizado =
+        Optional<Producto> productoActualizado =
                 productoService.actualizarProducto(id, dto);
 
-        return ResponseEntity.ok(productoActualizado);
+        if (productoActualizado.isEmpty()) {
+            return ResponseEntity
+                    .notFound()
+                    .build();
+        }
+
+        return ResponseEntity.ok(
+                productoActualizado.get()
+        );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProducto(
             @PathVariable Long id) {
 
-        productoService.eliminarProducto(id);
+        boolean eliminado =
+                productoService.eliminarProducto(id);
+
+        if (!eliminado) {
+            return ResponseEntity
+                    .notFound()
+                    .build();
+        }
 
         return ResponseEntity
                 .noContent()

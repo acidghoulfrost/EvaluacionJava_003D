@@ -15,9 +15,12 @@ public class ProductoService {
     @Autowired
     private ProductoRepository productoRepository;
 
+    @Autowired
+    private AuditPublisherService auditPublisherService;
+
     public List<Producto> listarProductos() {
 
-        return productoRepository.findAll();
+        return productoRepository.findByActivoTrue();
     }
 
     public Producto crearProducto(
@@ -43,18 +46,26 @@ public class ProductoService {
 
         producto.setActivo(true);
 
-        return productoRepository.save(
+        Producto productoGuardado =
+                productoRepository.save(
                 producto);
+
+        auditPublisherService.publicarEvento(
+                "CREAR",
+                productoGuardado);
+
+        return productoGuardado;
     }
 
-    public Producto actualizarProducto(
+    public Optional<Producto> actualizarProducto(
             Long id,
             ProductoDTO dto) {
 
         Optional<Producto> productoOptional =
                 productoRepository.findById(id);
 
-        if (productoOptional.isPresent()) {
+        if (productoOptional.isPresent()
+                && Boolean.TRUE.equals(productoOptional.get().getActivo())) {
 
             Producto producto =
                     productoOptional.get();
@@ -74,26 +85,43 @@ public class ProductoService {
             producto.setCategoria(
                     dto.getCategoria());
 
-            return productoRepository.save(
+            Producto productoGuardado =
+                    productoRepository.save(
                     producto);
+
+            auditPublisherService.publicarEvento(
+                    "MODIFICAR",
+                    productoGuardado);
+
+            return Optional.of(productoGuardado);
         }
 
-        return null;
+        return Optional.empty();
     }
 
-    public void eliminarProducto(Long id) {
+    public boolean eliminarProducto(Long id) {
 
         Optional<Producto> productoOptional =
                 productoRepository.findById(id);
 
-        if (productoOptional.isPresent()) {
+        if (productoOptional.isPresent()
+                && Boolean.TRUE.equals(productoOptional.get().getActivo())) {
 
             Producto producto =
                     productoOptional.get();
 
             producto.setActivo(false);
 
-            productoRepository.save(producto);
+            Producto productoGuardado =
+                    productoRepository.save(producto);
+
+            auditPublisherService.publicarEvento(
+                    "ELIMINAR",
+                    productoGuardado);
+
+            return true;
         }
+
+        return false;
     }
 }
