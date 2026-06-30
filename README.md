@@ -145,17 +145,3 @@ URL local:
 ```text
 http://localhost:8080
 ```
-
-## AWS Academy
-
-Para la evaluacion se usa AWS Academy Learner Lab.
-
-El rol usado es:
-
-```text
-LabRole
-```
-
-No se crean roles IAM personalizados.
-
-La arquitectura esperada usa API Gateway, Load Balancer, ECS Fargate, PostgreSQL, SQS, Lambda y CloudWatch.
